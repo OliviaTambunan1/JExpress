@@ -30,4 +30,27 @@ public class PackageMapper {
             stmt.execute(sql);
         }
     }
+
+
+
+public void insert(Package pkg, int customerId) throws SQLException {
+        String sql = """
+                INSERT INTO packages (id, customer_id, sender_name, receiver_name,
+                    destination, weight_kg, package_type, status)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                """;
+        try (PreparedStatement stmt = DBConnection.getInstance().prepareStatement(sql)) {
+            stmt.setString(1, pkg.getId());
+            stmt.setInt(2, customerId);
+            stmt.setString(3, pkg.getSenderName());
+            stmt.setString(4, pkg.getReceiverName());
+            stmt.setString(5, pkg.getDestination());
+            stmt.setDouble(6, pkg.getWeightKg());
+            stmt.setString(7, pkg.getPackageType());
+            stmt.setString(8, pkg.getStatus().name());
+            stmt.executeUpdate();
+        }
+    
+    
+    }
 }
