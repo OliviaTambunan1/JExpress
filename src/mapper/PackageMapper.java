@@ -73,5 +73,24 @@ public List<Package> findAll() throws SQLException {
         }
         return null;
     }
+    public List<Package> findByCustomerId(int customerId) throws SQLException {
+        List<Package> list = new ArrayList<>();
+        String sql = "SELECT * FROM packages WHERE customer_id = ?";
+        try (PreparedStatement stmt = DBConnection.getInstance().prepareStatement(sql)) {
+            stmt.setInt(1, customerId);
+            ResultSet rs = stmt.executeQuery();
+            while (rs.next()) list.add(mapRow(rs));
+        }
+        return list;
+    }
+
+    public boolean updateStatus(String id, PackageStatus status) throws SQLException {
+        String sql = "UPDATE packages SET status = ? WHERE id = ?";
+        try (PreparedStatement stmt = DBConnection.getInstance().prepareStatement(sql)) {
+            stmt.setString(1, status.name());
+            stmt.setString(2, id);
+            return stmt.executeUpdate() > 0;
+        }
+    }
 
 }
