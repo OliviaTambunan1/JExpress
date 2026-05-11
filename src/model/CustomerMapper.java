@@ -21,4 +21,13 @@ public class CustomerMapper {
             stmt.execute(sql);
         }
     }
+ public void insert(Customer customer) throws SQLException {
+        String sql = "INSERT INTO customers (name, phone) VALUES (?, ?) RETURNING id";
+        try (PreparedStatement stmt = DBConnection.getInstance().prepareStatement(sql)) {
+            stmt.setString(1, customer.getName());
+            stmt.setString(2, customer.getPhone());
+            ResultSet rs = stmt.executeQuery();
+            if (rs.next()) customer.setId(rs.getInt("id"));
+        }
+    }
 }
