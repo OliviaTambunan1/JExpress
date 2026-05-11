@@ -53,4 +53,25 @@ public void insert(Package pkg, int customerId) throws SQLException {
     
     
     }
+
+public List<Package> findAll() throws SQLException {
+        List<Package> list = new ArrayList<>();
+        String sql = "SELECT * FROM packages ORDER BY id";
+        try (Statement stmt = DBConnection.getInstance().createStatement();
+             ResultSet rs   = stmt.executeQuery(sql)) {
+            while (rs.next()) list.add(mapRow(rs));
+        }
+        return list;
+    }
+
+    public Package findById(String id) throws SQLException {
+        String sql = "SELECT * FROM packages WHERE id = ?";
+        try (PreparedStatement stmt = DBConnection.getInstance().prepareStatement(sql)) {
+            stmt.setString(1, id);
+            ResultSet rs = stmt.executeQuery();
+            if (rs.next()) return mapRow(rs);
+        }
+        return null;
+    }
+
 }
