@@ -35,4 +35,24 @@ public class PackageLogMapper {
             stmt.executeUpdate();
         }
     }
+
+    public List<PackageLog> findByPackageId(String packageId) throws SQLException {
+        List<PackageLog> logs = new ArrayList<>();
+        String sql = "SELECT * FROM package_logs WHERE package_id = ? ORDER BY created_at ASC";
+        try (PreparedStatement stmt = DBConnection.getInstance().prepareStatement(sql)) {
+            stmt.setString(1, packageId);
+            ResultSet rs = stmt.executeQuery();
+            while (rs.next()) {
+                logs.add(new PackageLog(
+                        rs.getInt("id"),
+                        rs.getString("package_id"),
+                        PackageStatus.fromString(rs.getString("status")),
+                        rs.getString("location"),
+                        rs.getTimestamp("created_at").toLocalDateTime()
+                ));
+            }
+        }
+        return logs;
+    }
+
 }
