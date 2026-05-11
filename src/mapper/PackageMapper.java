@@ -93,4 +93,40 @@ public List<Package> findAll() throws SQLException {
         }
     }
 
+    public Map<String, List<Package>> findAllGroupedByCustomer() throws SQLException {
+        Map<String, List<Package>> grouped = new HashMap<>();
+        String sql = """
+                SELECT p.*, c.name AS customer_name
+                FROM packages p JOIN customers c ON p.customer_id = c.id
+                ORDER BY c.name
+                """;
+        try (Statement stmt = DBConnection.getInstance().createStatement();
+             ResultSet rs   = stmt.executeQuery(sql)) {
+            while (rs.next()) {
+                String customerName = rs.getString("customer_name");
+                grouped.computeIfAbsent(customerName, k -> new ArrayList<>())
+                       .add(mapRow(rs));
+            }
+        }
+        return grouped;
+    }
+
+    private Package mapRow(ResultSet rs) throws SQLException {
+        String type     = rs.getString("package_type");
+        String id       = rs.getString("id");
+        String sender   = rs.getString("sender_name");
+        String receiver = rs.getString("receiver_name");
+        String dest     = rs.getString("destination");
+        double weight   = rs.getDouble("weight_kg");
+        PackageStatus status = PackageStatus.fromString(rs.getString("status"));
+
+        Package pkg = switch (type) {
+            case "EXPRESS" -> new ExpressPackage(id, sender, receiver, dest, weight);
+            case "FRAGILE" -> new FragilePackage(id, sender, receiver, dest, weight);
+            default        -> new RegularPackage(id, sender, receiver, dest, weight);
+        };
+        pkg.setStatus(status);
+        return pkg;
+    }
+
 }
