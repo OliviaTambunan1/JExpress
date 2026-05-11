@@ -33,4 +33,14 @@ public class AdminAuth {
             return rs.next();
         }
     }
+      public static boolean isUsernameExists(String username) throws SQLException {
+        String sql = "SELECT COUNT(*) FROM admins WHERE username = ?";
+        try (PreparedStatement stmt = DBConnection.getInstance().prepareStatement(sql)) {
+            stmt.setString(1, username);
+            ResultSet rs = stmt.executeQuery();
+            if (rs.next()) return rs.getInt(1) > 0;
+        }
+        return false;
+    }
+
 }
