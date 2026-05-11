@@ -16,4 +16,12 @@ public class AdminAuth {
             stmt.execute(sql);
         }
     }
+     public static void register(String username, String password) throws SQLException {
+        String sql = "INSERT INTO admins (username, password) VALUES (?, ?)";
+        try (PreparedStatement stmt = DBConnection.getInstance().prepareStatement(sql)) {
+            stmt.setString(1, username);
+            stmt.setString(2, password);
+            stmt.executeUpdate();
+        }
+    }
 }
