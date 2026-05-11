@@ -24,4 +24,13 @@ public class AdminAuth {
             stmt.executeUpdate();
         }
     }
+       public static boolean login(String username, String password) throws SQLException {
+        String sql = "SELECT * FROM admins WHERE username = ? AND password = ?";
+        try (PreparedStatement stmt = DBConnection.getInstance().prepareStatement(sql)) {
+            stmt.setString(1, username);
+            stmt.setString(2, password);
+            ResultSet rs = stmt.executeQuery();
+            return rs.next();
+        }
+    }
 }
