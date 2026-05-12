@@ -160,4 +160,119 @@ public class Main {
             System.err.println(RED + "Gagal: " + e.getMessage() + RESET);
         }
     }
+
+    private static void tambahCustomer() throws SQLException {
+        printHeader("TAMBAH CUSTOMER");
+        String name  = readString("Nama  : ");
+        String phone = readString("No HP : ");
+        Customer c = new Customer(name, phone);
+        customerMapper.insert(c);
+        print(GREEN, "Customer ditambahkan! ID: " + c.getId());
+    }
+
+    private static void lihatCustomer() throws SQLException {
+        List<Customer> list = customerMapper.findAll();
+        printHeader("DAFTAR CUSTOMER (" + list.size() + ")");
+        if (list.isEmpty()) { print(GRAY, "Belum ada customer."); return; }
+        printTableHeader(new String[]{"ID", "Nama", "No HP"}, new int[]{4, 22, 16});
+        for (Customer c : list)
+            printTableRow(new String[]{String.valueOf(c.getId()), c.getName(), c.getPhone()},
+                    new int[]{4, 22, 16});
+        printTableFooter(new int[]{4, 22, 16});
+    }
+
+    private static void tambahPaket() throws SQLException {
+        List<Customer> customers = customerMapper.findAll();
+        if (customers.isEmpty()) { print(RED, "Tambah customer dulu."); return; }
+
+        printHeader("TAMBAH PAKET");
+        printTableHeader(new String[]{"ID", "Nama", "No HP"}, new int[]{4, 22, 16});
+        for (Customer c : customers)
+            printTableRow(new String[]{String.valueOf(c.getId()), c.getName(), c.getPhone()},
+                    new int[]{4, 22, 16});
+        printTableFooter(new int[]{4, 22, 16});
+
+        int    custId = readInt("Pilih ID Customer  : ");
+        String id     = readString("ID Paket (PKT-xxx) : ");
+        String sender = readString("Pengirim           : ");
+        String recv   = readString("Penerima           : ");
+        String dest   = readString("Kota Tujuan        : ");
+        double weight = readDouble("Berat (kg)         : ");
+        String origin = readString("Kota Asal          : ");
+
+        System.out.println("  " + CYAN + "1" + RESET + "=Regular  "
+                + BLUE + "2" + RESET + "=Express  "
+                + PURPLE + "3" + RESET + "=Fragile");
+
+        Package pkg = switch (readInt("Pilih jenis        : ")) {
+            case 2 -> new ExpressPackage(id, sender, recv, dest, weight);
+            case 3 -> new FragilePackage(id, sender, recv, dest, weight);
+            default -> new RegularPackage(id, sender, recv, dest, weight);
+        };
+
+        packageMapper.insert(pkg, custId);
+        packageLogMapper.insert(new PackageLog(id, PackageStatus.PENDING, origin));
+        print(GREEN, "Paket berhasil ditambahkan!");
+        System.out.println(YELLOW + "  Ongkir    : Rp" + String.format("%.0f", pkg.calculateShippingCost()) + RESET);
+        System.out.println(CYAN   + "  Est. tiba : " + pkg.getEstimasiTiba() + RESET);
+    }
+
+    private static void lihatSemuaPaket() throws SQLException {
+        List<Package> list = packageMapper.findAll();
+        printHeader("SEMUA PAKET (" + list.size() + ")");
+        if (list.isEmpty()) { print(GRAY, "Belum ada paket."); return; }
+        printTableHeader(new String[]{"ID Paket", "Tipe", "Pengirim", "Penerima", "Tujuan", "Status"},
+                new int[]{10, 8, 16, 16, 14, 11});
+        for (Package p : list)
+            printTableRow(new String[]{p.getId(), p.getPackageType(), p.getSenderName(),
+                    p.getReceiverName(), p.getDestination(), p.getStatus().name()},
+                    new int[]{10, 8, 16, 16, 14, 11});
+        printTableFooter(new int[]{10, 8, 16, 16, 14, 11});
+    }
+
+    private static void rekapPerCustomer() throws SQLException {
+        Map<String, List<Package>> grouped = packageMapper.findAllGroupedByCustomer();
+        printHeader("REKAP PAKET PER CUSTOMER");
+        if (grouped.isEmpty()) { print(GRAY, "Belum ada data."); return; }
+
+        grouped.forEach((name, packages) -> {
+            double total = packages.stream().mapToDouble(Package::calculateShippingCost).sum();
+            System.out.println("\n" + BOLD + CYAN + "  " + name + RESET
+                    + GRAY + " (" + packages.size() + " paket)" + RESET);
+            printTableHeader(new String[]{"ID", "Tipe", "Tujuan", "Status", "Ongkir"},
+                    new int[]{10, 8, 14, 11, 12});
+            for (Package p : packages)
+                printTableRow(new String[]{p.getId(), p.getPackageType(), p.getDestination(),
+                        p.getStatus().name(), "Rp" + String.format("%.0f", p.calculateShippingCost())},
+                        new int[]{10, 8, 14, 11, 12});
+            printTableFooter(new int[]{10, 8, 14, 11, 12});
+            System.out.println(YELLOW + "  Total ongkir: Rp" + String.format("%.0f", total) + RESET);
+        });
+    }
+
+    private static void updateStatus() throws SQLException {
+        printHeader("UPDATE STATUS PAKET");
+        String id = readString("ID Paket : ");
+
+        Package pkg = packageMapper.findById(id);
+        if (pkg == null) { print(RED, "Paket tidak ditemukan."); return; }
+
+        System.out.println(GRAY + "  Status saat ini: " + RESET + colorStatus(pkg.getStatus()));
+        System.out.println("  " + BLUE  + "1" + RESET + ". SHIPPED     (sudah dikirim)");
+        System.out.println("  " + CYAN  + "2" + RESET + ". IN_TRANSIT  (dalam perjalanan)");
+        System.out.println("  " + GREEN + "3" + RESET + ". DELIVERED   (sudah sampai)");
+
+        PackageStatus newStatus = switch (readInt("Status baru : ")) {
+            case 1 -> PackageStatus.SHIPPED;
+            case 2 -> PackageStatus.IN_TRANSIT;
+            case 3 -> PackageStatus.DELIVERED;
+            default -> null;
+        };
+        if (newStatus == null) { print(RED, "Pilihan tidak valid."); return; }
+
+        String location = readString("Lokasi saat ini : ");
+        packageMapper.updateStatus(id, newStatus);
+        packageLogMapper.insert(new PackageLog(id, newStatus, location));
+        print(GREEN, "Status diperbarui ke " + newStatus + " | " + location);
+    }
 }
