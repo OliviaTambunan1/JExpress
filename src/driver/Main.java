@@ -275,4 +275,40 @@ public class Main {
         packageLogMapper.insert(new PackageLog(id, newStatus, location));
         print(GREEN, "Status diperbarui ke " + newStatus + " | " + location);
     }
+
+    private static void trackingPaket() {
+        printHeader("TRACKING PAKET");
+        String id = readString("Masukkan nomor resi : ");
+
+        try {
+            Package pkg = packageMapper.findById(id);
+            if (pkg == null) { print(RED, "Nomor resi tidak ditemukan."); return; }
+
+            printGaris();
+            System.out.println(BOLD + "  Nomor Resi : " + RESET + CYAN + pkg.getId() + RESET);
+            System.out.println(BOLD + "  Tipe       : " + RESET + pkg.getPackageType());
+            System.out.println(BOLD + "  Pengirim   : " + RESET + pkg.getSenderName());
+            System.out.println(BOLD + "  Penerima   : " + RESET + pkg.getReceiverName());
+            System.out.println(BOLD + "  Tujuan     : " + RESET + pkg.getDestination());
+            System.out.println(BOLD + "  Ongkir     : " + RESET + YELLOW
+                    + "Rp" + String.format("%.0f", pkg.calculateShippingCost()) + RESET);
+            System.out.println(BOLD + "  Est. Tiba  : " + RESET + CYAN + pkg.getEstimasiTiba() + RESET);
+            System.out.println(BOLD + "  Status     : " + RESET + colorStatus(pkg.getStatus()));
+            printGaris();
+
+            List<PackageLog> logs = packageLogMapper.findByPackageId(id);
+            System.out.println("\n" + BOLD + "  Riwayat Perjalanan:" + RESET);
+            if (logs.isEmpty()) {
+                print(GRAY, "Belum ada riwayat.");
+            } else {
+                System.out.println(GRAY + "  Tanggal        Status       Lokasi" + RESET);
+                for (PackageLog log : logs)
+                    System.out.println(GRAY + log + RESET);
+            }
+            printGaris();
+
+        } catch (SQLException e) {
+            System.err.println(RED + "Error: " + e.getMessage() + RESET);
+        }
+    }
 }
