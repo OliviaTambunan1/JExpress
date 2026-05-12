@@ -129,4 +129,35 @@ public class Main {
         if (s.length() > width) s = s.substring(0, width - 1) + ".";
         return s + " ".repeat(Math.max(0, width - s.length()));
     }
+
+    private static boolean loginAdmin() {
+        printHeader("LOGIN ADMIN");
+        String username = readString("Username : ");
+        String password = readString("Password : ");
+        try {
+            if (AdminAuth.login(username, password)) {
+                print(GREEN, "Selamat datang, " + BOLD + username + RESET + GREEN + "!");
+                return true;
+            }
+            print(RED, "Username atau password salah.");
+        } catch (SQLException e) {
+            System.err.println(RED + "Error: " + e.getMessage() + RESET);
+        }
+        return false;
+    }
+
+    private static void daftarAdmin() {
+        printHeader("DAFTAR AKUN ADMIN");
+        try {
+            String username = readString("Username : ");
+            if (AdminAuth.isUsernameExists(username)) {
+                print(RED, "Username sudah dipakai."); return;
+            }
+            String password = readString("Password : ");
+            AdminAuth.register(username, password);
+            print(GREEN, "Akun admin berhasil dibuat! Silakan login.");
+        } catch (SQLException e) {
+            System.err.println(RED + "Gagal: " + e.getMessage() + RESET);
+        }
+    }
 }
