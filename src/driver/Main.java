@@ -39,7 +39,24 @@ public class Main {
             return;
         }
 
-        System.out.println("  Database siap.");
+        boolean running = true;
+        while (running) {
+            printBox("MENU UTAMA", new String[]{
+                "1. Login Admin",
+                "2. Daftar Akun Admin",
+                "3. Tracking Paket",
+                "0. Keluar"
+            }, CYAN);
+            switch (readInt("Pilih: ")) {
+                case 1 -> { if (loginAdmin()) menuAdmin(); }
+                case 2 -> daftarAdmin();
+                case 3 -> trackingPaket();
+                case 0 -> { running = false; print(YELLOW, "Sampai jumpa!"); }
+                default -> print(RED, "Pilihan tidak valid.");
+            }
+        }
+
+        DBConnection.close();
     }
 
     private static void printBanner() {
@@ -309,6 +326,35 @@ public class Main {
 
         } catch (SQLException e) {
             System.err.println(RED + "Error: " + e.getMessage() + RESET);
+        }
+    }
+
+    private static void menuAdmin() {
+        boolean running = true;
+        while (running) {
+            printBox("MENU ADMIN", new String[]{
+                "1. Tambah Customer",
+                "2. Lihat Semua Customer",
+                "3. Tambah Paket",
+                "4. Lihat Semua Paket",
+                "5. Rekap Paket per Customer",
+                "6. Update Status Paket",
+                "0. Logout"
+            }, BLUE);
+            try {
+                switch (readInt("Pilih: ")) {
+                    case 1 -> tambahCustomer();
+                    case 2 -> lihatCustomer();
+                    case 3 -> tambahPaket();
+                    case 4 -> lihatSemuaPaket();
+                    case 5 -> rekapPerCustomer();
+                    case 6 -> updateStatus();
+                    case 0 -> { print(YELLOW, "Logout berhasil."); running = false; }
+                    default -> print(RED, "Pilihan tidak valid.");
+                }
+            } catch (SQLException e) {
+                System.err.println(RED + "Error: " + e.getMessage() + RESET);
+            }
         }
     }
 }
