@@ -28,8 +28,18 @@ public class Main {
 
     public static void main(String[] args) {
         printBanner();
-        System.out.println("  Program siap.");
-        DBConnection.close();
+
+        try {
+            AdminAuth.createTableIfNotExists();
+            customerMapper.createTableIfNotExists();
+            packageMapper.createTableIfNotExists();
+            packageLogMapper.createTableIfNotExists();
+        } catch (SQLException e) {
+            System.err.println(RED + "Gagal inisialisasi DB: " + e.getMessage() + RESET);
+            return;
+        }
+
+        System.out.println("  Database siap.");
     }
 
     private static void printBanner() {
