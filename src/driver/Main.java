@@ -42,6 +42,14 @@ public class Main {
         System.out.println("  Database siap.");
     }
 
+    private static void printBanner() {
+        System.out.println(BOLD + CYAN);
+        System.out.println("  ┌──────────────────────────────────┐");
+        System.out.println("  │             JExpress             │");
+        System.out.println("  └──────────────────────────────────┘");
+        System.out.println(RESET);
+    }
+
     private static void printHeader(String title) {
         System.out.println("\n" + BOLD + CYAN + "  ── " + title + " ──" + RESET);
     }
@@ -91,11 +99,34 @@ public class Main {
         };
     }
 
-    private static void printBanner() {
-        System.out.println(BOLD + CYAN);
-        System.out.println("  ┌──────────────────────────────────┐");
-        System.out.println("  │             JExpress             │");
-        System.out.println("  └──────────────────────────────────┘");
-        System.out.println(RESET);
+    private static void printTableHeader(String[] cols, int[] widths) {
+        StringBuilder sep = new StringBuilder("  +");
+        StringBuilder row = new StringBuilder("  |");
+        for (int i = 0; i < cols.length; i++) {
+            sep.append("-".repeat(widths[i] + 2)).append("+");
+            row.append(" ").append(BOLD).append(pad(cols[i], widths[i])).append(RESET).append(" |");
+        }
+        System.out.println(GRAY + sep + RESET);
+        System.out.println(row);
+        System.out.println(GRAY + sep + RESET);
+    }
+
+    private static void printTableRow(String[] vals, int[] widths) {
+        StringBuilder row = new StringBuilder("  |");
+        for (int i = 0; i < vals.length; i++)
+            row.append(" ").append(pad(vals[i], widths[i])).append(" |");
+        System.out.println(row);
+    }
+
+    private static void printTableFooter(int[] widths) {
+        StringBuilder sep = new StringBuilder("  +");
+        for (int w : widths) sep.append("-".repeat(w + 2)).append("+");
+        System.out.println(GRAY + sep + RESET);
+    }
+
+    private static String pad(String s, int width) {
+        if (s == null) s = "";
+        if (s.length() > width) s = s.substring(0, width - 1) + ".";
+        return s + " ".repeat(Math.max(0, width - s.length()));
     }
 }
