@@ -26,6 +26,8 @@ public class Main {
     static final String PURPLE = "\u001B[95m";
     static final String GRAY   = "\u001B[90m";
 
+    // ── ENTRY POINT ───────────────────────────────────────────
+    
     public static void main(String[] args) {
         printBanner();
 
@@ -59,6 +61,8 @@ public class Main {
         DBConnection.close();
     }
 
+    // ── UI HELPERS ────────────────────────────────────────────
+
     private static void printBanner() {
         System.out.println(BOLD + CYAN);
         System.out.println("  ┌──────────────────────────────────┐");
@@ -88,23 +92,6 @@ public class Main {
 
     private static void print(String color, String msg) {
         System.out.println(color + "  " + msg + RESET);
-    }
-
-    private static String readString(String prompt) {
-        System.out.print("  " + prompt);
-        return scanner.nextLine().trim();
-    }
-
-    private static int readInt(String prompt) {
-        System.out.print("  " + prompt);
-        try { return Integer.parseInt(scanner.nextLine().trim()); }
-        catch (NumberFormatException e) { return -1; }
-    }
-
-    private static double readDouble(String prompt) {
-        System.out.print("  " + prompt);
-        try { return Double.parseDouble(scanner.nextLine().trim()); }
-        catch (NumberFormatException e) { return 0.0; }
     }
 
     private static String colorStatus(PackageStatus status) {
@@ -147,6 +134,25 @@ public class Main {
         return s + " ".repeat(Math.max(0, width - s.length()));
     }
 
+    private static String readString(String prompt) {
+        System.out.print("  " + prompt);
+        return scanner.nextLine().trim();
+    }
+
+    private static int readInt(String prompt) {
+        System.out.print("  " + prompt);
+        try { return Integer.parseInt(scanner.nextLine().trim()); }
+        catch (NumberFormatException e) { return -1; }
+    }
+
+    private static double readDouble(String prompt) {
+        System.out.print("  " + prompt);
+        try { return Double.parseDouble(scanner.nextLine().trim()); }
+        catch (NumberFormatException e) { return 0.0; }
+    }
+
+    // ── AUTH ──────────────────────────────────────────────────
+
     private static boolean loginAdmin() {
         printHeader("LOGIN ADMIN");
         String username = readString("Username : ");
@@ -177,6 +183,39 @@ public class Main {
             System.err.println(RED + "Gagal: " + e.getMessage() + RESET);
         }
     }
+
+    // ── MENU ADMIN ────────────────────────────────────────────
+
+    private static void menuAdmin() {
+        boolean running = true;
+        while (running) {
+            printBox("MENU ADMIN", new String[]{
+                "1. Tambah Customer",
+                "2. Lihat Semua Customer",
+                "3. Tambah Paket",
+                "4. Lihat Semua Paket",
+                "5. Rekap Paket per Customer",
+                "6. Update Status Paket",
+                "0. Logout"
+            }, BLUE);
+            try {
+                switch (readInt("Pilih: ")) {
+                    case 1 -> tambahCustomer();
+                    case 2 -> lihatCustomer();
+                    case 3 -> tambahPaket();
+                    case 4 -> lihatSemuaPaket();
+                    case 5 -> rekapPerCustomer();
+                    case 6 -> updateStatus();
+                    case 0 -> { print(YELLOW, "Logout berhasil."); running = false; }
+                    default -> print(RED, "Pilihan tidak valid.");
+                }
+            } catch (SQLException e) {
+                System.err.println(RED + "Error: " + e.getMessage() + RESET);
+            }
+        }
+    }
+
+    // ── FITUR ADMIN ───────────────────────────────────────────
 
     private static void tambahCustomer() throws SQLException {
         printHeader("TAMBAH CUSTOMER");
@@ -293,6 +332,8 @@ public class Main {
         print(GREEN, "Status diperbarui ke " + newStatus + " | " + location);
     }
 
+    // ── TRACKING (tanpa login) ────────────────────────────────
+
     private static void trackingPaket() {
         printHeader("TRACKING PAKET");
         String id = readString("Masukkan nomor resi : ");
@@ -329,32 +370,5 @@ public class Main {
         }
     }
 
-    private static void menuAdmin() {
-        boolean running = true;
-        while (running) {
-            printBox("MENU ADMIN", new String[]{
-                "1. Tambah Customer",
-                "2. Lihat Semua Customer",
-                "3. Tambah Paket",
-                "4. Lihat Semua Paket",
-                "5. Rekap Paket per Customer",
-                "6. Update Status Paket",
-                "0. Logout"
-            }, BLUE);
-            try {
-                switch (readInt("Pilih: ")) {
-                    case 1 -> tambahCustomer();
-                    case 2 -> lihatCustomer();
-                    case 3 -> tambahPaket();
-                    case 4 -> lihatSemuaPaket();
-                    case 5 -> rekapPerCustomer();
-                    case 6 -> updateStatus();
-                    case 0 -> { print(YELLOW, "Logout berhasil."); running = false; }
-                    default -> print(RED, "Pilihan tidak valid.");
-                }
-            } catch (SQLException e) {
-                System.err.println(RED + "Error: " + e.getMessage() + RESET);
-            }
-        }
-    }
+
 }

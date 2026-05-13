@@ -21,7 +21,7 @@ public class CustomerMapper {
             stmt.execute(sql);
         }
     }
-    
+
     public void insert(Customer customer) throws SQLException {
         String sql = "INSERT INTO customers (name, phone) VALUES (?, ?) RETURNING id";
         try (PreparedStatement stmt = DBConnection.getInstance().prepareStatement(sql)) {
@@ -31,7 +31,7 @@ public class CustomerMapper {
             if (rs.next()) customer.setId(rs.getInt("id"));
         }
     }
-    
+
     public List<Customer> findAll() throws SQLException {
         List<Customer> list = new ArrayList<>();
         String sql = "SELECT * FROM customers ORDER BY id";
